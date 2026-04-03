@@ -1,0 +1,1663 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora GEI — AGROAVÍCOLA SAN MARINO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f1117;
+    --card: #1a1f2e;
+    --accent: #22c55e;
+    --accent-dim: #16a34a;
+    --border: #2a3045;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --red: #ef4444;
+    --yellow: #f59e0b;
+    --blue: #3b82f6;
+    --purple: #8b5cf6;
+    --input-bg: #0f1117;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ---- HEADER ---- */
+  .app-header {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .app-header .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .app-header .logo-icon {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, var(--accent), #16a34a);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+  .app-header .logo-text h1 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+  .app-header .logo-text span {
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .header-badge {
+    background: rgba(34,197,94,0.12);
+    border: 1px solid rgba(34,197,94,0.3);
+    color: var(--accent);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  /* ---- TABS ---- */
+  .tab-nav {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex;
+    gap: 2px;
+    position: sticky;
+    top: 71px;
+    z-index: 99;
+  }
+  .tab-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    padding: 14px 20px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  .tab-btn .tab-icon { font-size: 15px; }
+
+  /* ---- MAIN CONTENT ---- */
+  .main-content { padding: 28px 32px; max-width: 1400px; margin: 0 auto; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ---- SECTION TITLES ---- */
+  .section-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+  .section-subtitle {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+
+  /* ---- CARDS ---- */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .card-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .card-value.green { color: var(--accent); }
+  .card-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* ---- KPI GRID ---- */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  /* ---- TABLE ---- */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead th {
+    background: rgba(42,48,69,0.8);
+    color: var(--muted);
+    font-weight: 600;
+    padding: 11px 14px;
+    text-align: left;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody td {
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(42,48,69,0.6);
+    color: var(--text);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: rgba(255,255,255,0.02); }
+  .td-num { text-align: right; font-variant-numeric: tabular-nums; }
+  .td-total { font-weight: 700; color: var(--accent); }
+  tfoot td {
+    padding: 11px 14px;
+    font-weight: 700;
+    border-top: 2px solid var(--border);
+    background: rgba(34,197,94,0.05);
+    color: var(--accent);
+  }
+
+  /* ---- FORM ---- */
+  .form-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 24px;
+    align-items: start;
+  }
+  @media (max-width: 1024px) {
+    .form-layout { grid-template-columns: 1fr; }
+  }
+
+  .form-header-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.3px;
+  }
+  input[type="number"], input[type="text"], select {
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+    padding: 9px 12px;
+    width: 100%;
+    transition: border-color 0.2s;
+    outline: none;
+    -moz-appearance: textfield;
+  }
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+  input[type="number"]:focus, input[type="text"]:focus, select:focus {
+    border-color: var(--accent);
+  }
+  select option { background: #1a1f2e; }
+
+  /* ---- ACCORDION ---- */
+  .accordion {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .accordion-header {
+    background: var(--card);
+    padding: 14px 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+    transition: background 0.15s;
+  }
+  .accordion-header:hover { background: rgba(255,255,255,0.03); }
+  .accordion-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .accordion-cat-badge {
+    background: rgba(34,197,94,0.15);
+    color: var(--accent);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .accordion-cat-badge.cat2 { background: rgba(59,130,246,0.15); color: var(--blue); }
+  .accordion-cat-badge.cat3 { background: rgba(245,158,11,0.15); color: var(--yellow); }
+  .accordion-cat-badge.cat4 { background: rgba(139,92,246,0.15); color: var(--purple); }
+  .accordion-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .accordion-subtotal {
+    font-size: 12px;
+    color: var(--muted);
+    margin-left: 8px;
+    font-weight: 400;
+  }
+  .accordion-subtotal.has-value { color: var(--accent); font-weight: 600; }
+  .accordion-arrow {
+    color: var(--muted);
+    font-size: 12px;
+    transition: transform 0.2s;
+  }
+  .accordion.open .accordion-arrow { transform: rotate(180deg); }
+  .accordion-body {
+    display: none;
+    background: rgba(15,17,23,0.5);
+    border-top: 1px solid var(--border);
+    padding: 18px;
+  }
+  .accordion.open .accordion-body { display: block; }
+  .input-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+  }
+
+  /* ---- LIVE PREVIEW ---- */
+  .preview-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    position: sticky;
+    top: 130px;
+  }
+  .preview-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 16px;
+  }
+  .preview-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(42,48,69,0.5);
+  }
+  .preview-row:last-of-type { border-bottom: none; }
+  .preview-label { font-size: 12px; color: var(--muted); }
+  .preview-value { font-size: 13px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+  .preview-total-row {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 2px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .preview-total-label { font-size: 13px; font-weight: 700; color: var(--text); }
+  .preview-total-value { font-size: 22px; font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .preview-unit { font-size: 11px; color: var(--muted); margin-top: 2px; text-align: right; }
+
+  .preview-sfv {
+    margin-top: 12px;
+    background: rgba(34,197,94,0.06);
+    border: 1px solid rgba(34,197,94,0.2);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .preview-sfv span { color: var(--accent); font-weight: 600; }
+
+  /* ---- BUTTONS ---- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #0f1117;
+  }
+  .btn-primary:hover { background: var(--accent-dim); }
+  .btn-secondary {
+    background: rgba(42,48,69,0.8);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { background: rgba(42,48,69,1); }
+  .btn-danger {
+    background: rgba(239,68,68,0.1);
+    color: var(--red);
+    border: 1px solid rgba(239,68,68,0.2);
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  .btn-danger:hover { background: rgba(239,68,68,0.2); }
+  .btn-export {
+    background: rgba(59,130,246,0.1);
+    color: var(--blue);
+    border: 1px solid rgba(59,130,246,0.2);
+    padding: 12px 24px;
+    font-size: 14px;
+  }
+  .btn-export:hover { background: rgba(59,130,246,0.2); }
+  .form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  /* ---- CHARTS ---- */
+  .chart-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 900px) { .chart-grid { grid-template-columns: 1fr; } }
+  .chart-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+  }
+  .chart-card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .chart-wrap { position: relative; height: 280px; }
+
+  /* ---- EMPTY STATE ---- */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+  .empty-state .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+  .empty-state h3 { font-size: 18px; color: var(--text); margin-bottom: 8px; }
+  .empty-state p { font-size: 13px; }
+
+  /* ---- TOAST ---- */
+  .toast-container {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+  }
+  .toast {
+    background: #166534;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 12px 18px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 260px;
+    animation: toastIn 0.3s ease;
+    pointer-events: all;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .toast.error { background: #7f1d1d; border-color: var(--red); color: var(--red); }
+  @keyframes toastIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  @keyframes toastOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(120%); opacity: 0; } }
+  .toast.out { animation: toastOut 0.3s ease forwards; }
+
+  /* ---- HISTORICAL ---- */
+  .hist-note {
+    background: rgba(59,130,246,0.07);
+    border: 1px solid rgba(59,130,246,0.2);
+    border-radius: var(--radius-sm);
+    padding: 10px 16px;
+    font-size: 12px;
+    color: #93c5fd;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .hist-grid {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 24px;
+    align-items: start;
+  }
+  @media (max-width: 1100px) { .hist-grid { grid-template-columns: 1fr; } }
+
+  /* ---- EXPORT ---- */
+  .export-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    max-width: 800px;
+  }
+  @media (max-width: 700px) { .export-grid { grid-template-columns: 1fr; } }
+  .export-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .export-card-icon { font-size: 36px; }
+  .export-card h3 { font-size: 16px; font-weight: 700; }
+  .export-card p { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+  /* ---- MISC ---- */
+  .row-actions { display: flex; gap: 6px; }
+  .del-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 15px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    transition: all 0.15s;
+  }
+  .del-btn:hover { background: rgba(239,68,68,0.1); color: var(--red); }
+
+  .hr-sep { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  .info-tag {
+    background: rgba(59,130,246,0.08);
+    border: 1px solid rgba(59,130,246,0.2);
+    color: #93c5fd;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-weight: 600;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 9998;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+  }
+  .modal h3 { font-size: 18px; margin-bottom: 10px; }
+  .modal p { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+  .modal-actions { display: flex; gap: 12px; justify-content: center; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="app-header">
+  <div class="logo">
+    <div class="logo-icon">🌿</div>
+    <div class="logo-text">
+      <h1>AGROAVÍCOLA SAN MARINO</h1>
+      <span>Calculadora de Emisiones de Gases de Efecto Invernadero</span>
+    </div>
+  </div>
+  <div class="header-badge">ISO 14064-1</div>
+</header>
+
+<!-- TAB NAV -->
+<nav class="tab-nav">
+  <button class="tab-btn active" data-tab="historico">
+    <span class="tab-icon">📊</span> 2024 Histórico
+  </button>
+  <button class="tab-btn" data-tab="entrada">
+    <span class="tab-icon">✏️</span> Nueva Entrada
+  </button>
+  <button class="tab-btn" data-tab="resultados">
+    <span class="tab-icon">📈</span> Resultados
+  </button>
+  <button class="tab-btn" data-tab="exportar">
+    <span class="tab-icon">📥</span> Exportar
+  </button>
+</nav>
+
+<!-- MAIN -->
+<main class="main-content">
+
+  <!-- ==================== TAB 1: HISTÓRICO ==================== -->
+  <div class="tab-panel active" id="tab-historico">
+    <div class="section-title">Inventario 2024 — Resumen por Centro de Trabajo</div>
+    <div class="section-subtitle">Vista de solo lectura · Datos consolidados del período anual</div>
+
+    <div class="hist-note">
+      ℹ️ Datos correspondientes al período 01/01/2024 – 31/12/2024 · ISO 14064-1
+    </div>
+
+    <!-- KPIs 2024 -->
+    <div class="kpi-grid" style="margin-bottom:24px;">
+      <div class="card">
+        <div class="card-title">Total GEI 2024</div>
+        <div class="card-value green">20,414</div>
+        <div class="card-sub">ton CO₂e · todos los centros</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Categoría 1 — Directas</div>
+        <div class="card-value">12,414</div>
+        <div class="card-sub">ton CO₂e · 60.8%</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Categoría 2 — Energía</div>
+        <div class="card-value">3,857</div>
+        <div class="card-sub">ton CO₂e · 18.9%</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Categoría 3 — Transporte</div>
+        <div class="card-value">1,634</div>
+        <div class="card-sub">ton CO₂e · 8.0%</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Categoría 4 — Otras Indirectas</div>
+        <div class="card-value">2,197</div>
+        <div class="card-sub">ton CO₂e · 10.8%</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Centros de Trabajo</div>
+        <div class="card-value">10</div>
+        <div class="card-sub">sedes incluidas en el inventario</div>
+      </div>
+    </div>
+
+    <div class="hist-grid">
+      <!-- Table -->
+      <div>
+        <div class="table-wrap">
+          <table id="hist-table">
+            <thead>
+              <tr>
+                <th>Centro de Trabajo</th>
+                <th class="td-num">Cat 1<br><small style="font-weight:400;color:#64748b">ton CO₂e</small></th>
+                <th class="td-num">Cat 2<br><small style="font-weight:400;color:#64748b">ton CO₂e</small></th>
+                <th class="td-num">Cat 3<br><small style="font-weight:400;color:#64748b">ton CO₂e</small></th>
+                <th class="td-num">Cat 4<br><small style="font-weight:400;color:#64748b">ton CO₂e</small></th>
+                <th class="td-num">Total<br><small style="font-weight:400;color:#64748b">ton CO₂e</small></th>
+              </tr>
+            </thead>
+            <tbody id="hist-tbody"></tbody>
+            <tfoot id="hist-tfoot"></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- Donut chart -->
+      <div class="chart-card">
+        <div class="chart-card-title">Distribución por Centro — 2024</div>
+        <div class="chart-wrap">
+          <canvas id="hist-donut"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TAB 2: NUEVA ENTRADA ==================== -->
+  <div class="tab-panel" id="tab-entrada">
+    <div class="section-title">Nueva Entrada de Emisiones</div>
+    <div class="section-subtitle">Ingresa los consumos del período a reportar. Los cálculos se actualizan en tiempo real.</div>
+
+    <div class="form-layout">
+      <!-- LEFT: Form -->
+      <div>
+        <!-- Header fields -->
+        <div class="form-header-grid">
+          <div class="field-group">
+            <label for="f-periodo">Período</label>
+            <input type="text" id="f-periodo" placeholder="Ej: Enero 2025, Q1 2025, 2025">
+          </div>
+          <div class="field-group">
+            <label for="f-centro">Centro de Trabajo</label>
+            <select id="f-centro">
+              <option value="">-- Selecciona --</option>
+              <option>Planta de Beneficio</option>
+              <option>Toscana</option>
+              <option>La Esperanza 1</option>
+              <option>La Esperanza 2</option>
+              <option>Villa Claudia</option>
+              <option>El Bolo</option>
+              <option>Barcelona</option>
+              <option>Girón</option>
+              <option>San Gil</option>
+              <option>Tucumana</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- CATEGORIA 1 -->
+        <div style="margin-bottom:6px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;padding-left:2px;">
+          Categoría 1 — Emisiones Directas
+        </div>
+
+        <!-- 1.1 -->
+        <div class="accordion" id="acc-11">
+          <div class="accordion-header" onclick="toggleAccordion('acc-11')">
+            <div class="accordion-header-left">
+              <span class="accordion-cat-badge">1.1</span>
+              <span class="accordion-title">Combustión Estacionaria</span>
+              <span class="accordion-subtotal" id="sub-11">—</span>
+            </div>
+            <span class="accordion-arrow">▼</span>
+          </div>
+          <div class="accordion-body">
+            <div class="input-grid">
+              <div class="field-group">
+                <label>Gas Natural (m³)</label>
+                <input type="number" min="0" placeholder="0" id="f-gas-natural" oninput="recalcular()">
+              </div>
+              <div class="field-group">
+                <label>GLP (kg)</label>
+                <input type="number" min="0" placeholder="0" id="f-glp-kg" oninput="recalcular()">
+              </div>
+              <div class="field-group">
+                <label>Diesel Fija (gal)</label>
+                <input type="number" min="0" placeholder="0" id="f-diesel-fija" oninput="recalcular()">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 1.2 -->
+        <div class="accordion" id="acc-12">
+          <div class="accordion-header" onclick="toggleAccordion('acc-12')">
+            <div class="accordion-header-left">
+              <span class="accordion-cat-badge">1.2</span>
+              <span class="accordion-title">Combustión Móvil</span>
+              <span class="accordion-subtotal" id="sub-12">—</span>
+            </div>
+            <span class="accordion-arrow">▼</span>
+          </div>
+          <div class="accordion-body">
+            <div class="input-grid">
+              <div class="field-group">
+                <label>Diesel Móvil (gal)</label>
+                <input type="number" min="0" placeholder="0" id="f-diesel-movil" oninput="recalcular()">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 1.3 -->
+        <div class="accordion" id="acc-13">
+          <div class="accordion-header" onclick="toggleAccordion('acc-13')">
+            <div class="accordion-header-left">
+              <span class="accordion-cat-badge">1.3</span>
+              <span class="accordion-title">Emisiones Fugitivas</span>
+              <span class="accordion-subtotal" id="sub-13">—</span>
+            </div>
+            <span class="accordion-arrow">▼</span>
+          </div>
+          <div class="accordion-body">
+            <div class="input-grid">
+              <div class="field-group">
+                <label>Refrigerante R507 (kg)</label>
+                <input type="number" min="0" placeholder="0" id="f-r507" oninput="recalcular()">
+              </div>
+              <div class="field-group">
+                <label>Refrigerante R410a (kg)</label>
+                <input type="number" min="0" placeholder="0" id="f-r410a" oninput="recalcular()">
+              </div>
+              <div class="field-group">
+                <label>Refrigerante R22 (kg)</label>
+                <input type="number" min="0" placeholder="0" id="f-r22" oninput="recalcular()">
+              </div>
+              <div class="field-group">
+                <label>R404a Planta (kg)</label>
+                <input type="number" min="0" placeholder="0" id="f-r404-planta" oninput="recalcular()">
+              </div>
+              <div class="field-group">
+                <label>R404a Thermo King (kg)</label>
+                <input type="number" min="0" placeholder="0" id="f-r404-thermo" oninput="recalcular()">
+              </div>
+              <div class="field-group">
+                <label>Extintores CO₂ (kg)</label>
+                <input type="number" min="0" placeholder="0" id="f-extintor-co2" oninput="recalcular()">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 1.4 -->
+        <div class="accordion" id="acc-14">
+          <div class="accordion-header" onclick="toggleAccordion('acc-14')">
+            <div class="accordion-header-left">
+              <span class="accordion-cat-badge">1.4</span>
+              <span class="accordion-title">Lubricantes y Aceites</span>
+              <span class="accordion-subtotal" id="sub-14">—</span>
+            </div>
+            <span class="accordion-arrow">▼</span>
+          </div>
+          <div class="accordion-body">
+            <div class="input-grid">
+              <div class="field-group">
+                <label>Lubricantes Equipos (gal)</label>
+                <input type="number" min="0" placeholder="0" id="f-lubricantes" oninput="recalcular()">
+              </div>
+              <div class="field-group">
+                <label>Aceites Equipos (gal)</label>
+                <input type="number" min="0" placeholder="0" id="f-aceites-equipos" oninput="recalcular()">
+              </div>
+              <div class="field-group">
+                <label>Aceites Vehículos (gal)</label>
+                <input type="number" min="0" placeholder="0" id="f-aceites-vehiculos" oninput="recalcular()">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CATEGORIA 2 -->
+        <div style="margin:16px 0 6px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;padding-left:2px;">
+          Categoría 2 — Energía Indirecta
+        </div>
+
+        <div class="accordion" id="acc-2">
+          <div class="accordion-header" onclick="toggleAccordion('acc-2')">
+            <div class="accordion-header-left">
+              <span class="accordion-cat-badge cat2">2</span>
+              <span class="accordion-title">Energía Eléctrica (Red / Solar)</span>
+              <span class="accordion-subtotal" id="sub-2">—</span>
+            </div>
+            <span class="accordion-arrow">▼</span>
+          </div>
+          <div class="accordion-body">
+            <div class="input-grid">
+              <div class="field-group">
+                <label>Energía Red (kWh)</label>
+                <input type="number" min="0" placeholder="0" id="f-energia-red" oninput="recalcular()">
+              </div>
+              <div class="field-group">
+                <label>Energía SFV Solar (kWh) <span class="info-tag">Informativo</span></label>
+                <input type="number" min="0" placeholder="0" id="f-energia-sfv" oninput="recalcular()">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CATEGORIA 3 -->
+        <div style="margin:16px 0 6px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;padding-left:2px;">
+          Categoría 3 — Transporte
+        </div>
+
+        <div class="accordion" id="acc-3">
+          <div class="accordion-header" onclick="toggleAccordion('acc-3')">
+            <div class="accordion-header-left">
+              <span class="accordion-cat-badge cat3">3</span>
+              <span class="accordion-title">Transporte de Mercancías</span>
+              <span class="accordion-subtotal" id="sub-3">—</span>
+            </div>
+            <span class="accordion-arrow">▼</span>
+          </div>
+          <div class="accordion-body">
+            <div class="input-grid">
+              <div class="field-group">
+                <label>Diesel Transp. Aguas Arriba (gal)</label>
+                <input type="number" min="0" placeholder="0" id="f-diesel-arriba" oninput="recalcular()">
+              </div>
+              <div class="field-group">
+                <label>Diesel Transp. Aguas Abajo (gal)</label>
+                <input type="number" min="0" placeholder="0" id="f-diesel-abajo" oninput="recalcular()">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CATEGORIA 4 -->
+        <div style="margin:16px 0 6px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;padding-left:2px;">
+          Categoría 4 — Otras Emisiones Indirectas
+        </div>
+
+        <!-- 4.1 Papel -->
+        <div class="accordion" id="acc-41">
+          <div class="accordion-header" onclick="toggleAccordion('acc-41')">
+            <div class="accordion-header-left">
+              <span class="accordion-cat-badge cat4">4.1</span>
+              <span class="accordion-title">Consumo de Papel</span>
+              <span class="accordion-subtotal" id="sub-41">—</span>
+            </div>
+            <span class="accordion-arrow">▼</span>
+          </div>
+          <div class="accordion-body">
+            <div class="input-grid">
+              <div class="field-group">
+                <label>Papel Carta 75gr (resmas)</label>
+                <input type="number" min="0" placeholder="0" id="f-papel-carta" oninput="recalcular()">
+              </div>
+              <div class="field-group">
+                <label>Papel Oficio 75gr (resmas)</label>
+                <input type="number" min="0" placeholder="0" id="f-papel-oficio" oninput="recalcular()">
+              </div>
+              <div class="field-group">
+                <label>Papel Kraft (resmas)</label>
+                <input type="number" min="0" placeholder="0" id="f-papel-kraft" oninput="recalcular()">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4.2 Plástico -->
+        <div class="accordion" id="acc-42">
+          <div class="accordion-header" onclick="toggleAccordion('acc-42')">
+            <div class="accordion-header-left">
+              <span class="accordion-cat-badge cat4">4.2</span>
+              <span class="accordion-title">Plásticos</span>
+              <span class="accordion-subtotal" id="sub-42">—</span>
+            </div>
+            <span class="accordion-arrow">▼</span>
+          </div>
+          <div class="accordion-body">
+            <div class="input-grid">
+              <div class="field-group">
+                <label>Película Stretch cal. 0.6 — PEBD (kg)</label>
+                <input type="number" min="0" placeholder="0" id="f-stretch" oninput="recalcular()">
+              </div>
+              <div class="field-group">
+                <label>Saco Polipropileno (kg)</label>
+                <input type="number" min="0" placeholder="0" id="f-saco-pp" oninput="recalcular()">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4.3 Cartón -->
+        <div class="accordion" id="acc-43">
+          <div class="accordion-header" onclick="toggleAccordion('acc-43')">
+            <div class="accordion-header-left">
+              <span class="accordion-cat-badge cat4">4.3</span>
+              <span class="accordion-title">Cartón</span>
+              <span class="accordion-subtotal" id="sub-43">—</span>
+            </div>
+            <span class="accordion-arrow">▼</span>
+          </div>
+          <div class="accordion-body">
+            <div class="input-grid">
+              <div class="field-group">
+                <label>Cartón (kg)</label>
+                <input type="number" min="0" placeholder="0" id="f-carton" oninput="recalcular()">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4.4 Agua -->
+        <div class="accordion" id="acc-44">
+          <div class="accordion-header" onclick="toggleAccordion('acc-44')">
+            <div class="accordion-header-left">
+              <span class="accordion-cat-badge cat4">4.4</span>
+              <span class="accordion-title">Consumo de Agua</span>
+              <span class="accordion-subtotal" id="sub-44">—</span>
+            </div>
+            <span class="accordion-arrow">▼</span>
+          </div>
+          <div class="accordion-body">
+            <div class="input-grid">
+              <div class="field-group">
+                <label>Agua (m³)</label>
+                <input type="number" min="0" placeholder="0" id="f-agua" oninput="recalcular()">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4.6 / 4.7 Residuos -->
+        <div class="accordion" id="acc-46">
+          <div class="accordion-header" onclick="toggleAccordion('acc-46')">
+            <div class="accordion-header-left">
+              <span class="accordion-cat-badge cat4">4.6 / 4.7</span>
+              <span class="accordion-title">Residuos Sólidos y Orgánicos</span>
+              <span class="accordion-subtotal" id="sub-46">—</span>
+            </div>
+            <span class="accordion-arrow">▼</span>
+          </div>
+          <div class="accordion-body">
+            <div class="input-grid">
+              <div class="field-group">
+                <label>Residuos Sólidos No Aprovechables (kg)</label>
+                <input type="number" min="0" placeholder="0" id="f-residuos-solidos" oninput="recalcular()">
+              </div>
+              <div class="field-group">
+                <label>Residuos Orgánicos (kg)</label>
+                <input type="number" min="0" placeholder="0" id="f-residuos-organicos" oninput="recalcular()">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="guardarEntrada()">💾 Guardar Entrada</button>
+          <button class="btn btn-secondary" onclick="limpiarFormulario()">↺ Limpiar</button>
+        </div>
+      </div>
+
+      <!-- RIGHT: Live Preview -->
+      <div>
+        <div class="preview-card" id="preview-card">
+          <div class="preview-title">Calculo en Tiempo Real</div>
+          <div class="preview-row">
+            <span class="preview-label">Cat 1 — Directas</span>
+            <span class="preview-value" id="prev-cat1">0,00</span>
+          </div>
+          <div class="preview-row" style="padding-left:16px;border-left:2px solid rgba(42,48,69,0.8)">
+            <span class="preview-label" style="font-size:11px;color:#64748b">1.1 Comb. Estacionaria</span>
+            <span class="preview-value" style="font-size:11px;color:var(--muted)" id="prev-cat11">0,00</span>
+          </div>
+          <div class="preview-row" style="padding-left:16px;border-left:2px solid rgba(42,48,69,0.8)">
+            <span class="preview-label" style="font-size:11px;color:#64748b">1.2 Comb. Móvil</span>
+            <span class="preview-value" style="font-size:11px;color:var(--muted)" id="prev-cat12">0,00</span>
+          </div>
+          <div class="preview-row" style="padding-left:16px;border-left:2px solid rgba(42,48,69,0.8)">
+            <span class="preview-label" style="font-size:11px;color:#64748b">1.3 Fugitivas</span>
+            <span class="preview-value" style="font-size:11px;color:var(--muted)" id="prev-cat13">0,00</span>
+          </div>
+          <div class="preview-row" style="padding-left:16px;border-left:2px solid rgba(42,48,69,0.8)">
+            <span class="preview-label" style="font-size:11px;color:#64748b">1.4 Lubricantes</span>
+            <span class="preview-value" style="font-size:11px;color:var(--muted)" id="prev-cat14">0,00</span>
+          </div>
+          <div class="preview-row">
+            <span class="preview-label">Cat 2 — Energía</span>
+            <span class="preview-value" id="prev-cat2">0,00</span>
+          </div>
+          <div class="preview-row">
+            <span class="preview-label">Cat 3 — Transporte</span>
+            <span class="preview-value" id="prev-cat3">0,00</span>
+          </div>
+          <div class="preview-row">
+            <span class="preview-label">Cat 4 — Otras Indirectas</span>
+            <span class="preview-value" id="prev-cat4">0,00</span>
+          </div>
+          <div class="preview-total-row">
+            <div>
+              <div class="preview-total-label">TOTAL</div>
+              <div class="preview-unit">ton CO₂e</div>
+            </div>
+            <div id="prev-total" class="preview-total-value">0,00</div>
+          </div>
+          <div class="preview-sfv" id="preview-sfv-box" style="display:none;">
+            Energía Solar SFV: <span id="prev-sfv-val">0</span> kWh<br>
+            <span style="font-size:10px;opacity:0.7">(Informativo — no genera emisiones)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TAB 3: RESULTADOS ==================== -->
+  <div class="tab-panel" id="tab-resultados">
+    <div class="section-title">Resultados</div>
+    <div class="section-subtitle">Dashboard de entradas guardadas en esta sesión</div>
+
+    <div id="results-empty" class="empty-state" style="display:none;">
+      <div class="empty-icon">📭</div>
+      <h3>Aún no hay entradas</h3>
+      <p>Ve a 'Nueva Entrada' para comenzar a registrar emisiones.</p>
+    </div>
+
+    <div id="results-content">
+      <!-- KPIs -->
+      <div class="kpi-grid" id="results-kpis"></div>
+
+      <!-- Charts -->
+      <div class="chart-grid">
+        <div class="chart-card">
+          <div class="chart-card-title">Emisiones Totales por Entrada (ton CO₂e)</div>
+          <div class="chart-wrap"><canvas id="chart-bar"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-title">Desglose Categorías por Entrada</div>
+          <div class="chart-wrap"><canvas id="chart-stacked"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Período</th>
+              <th>Centro de Trabajo</th>
+              <th class="td-num">Cat 1<br><small style="font-weight:400;color:#64748b">ton CO₂e</small></th>
+              <th class="td-num">Cat 2<br><small style="font-weight:400;color:#64748b">ton CO₂e</small></th>
+              <th class="td-num">Cat 3<br><small style="font-weight:400;color:#64748b">ton CO₂e</small></th>
+              <th class="td-num">Cat 4<br><small style="font-weight:400;color:#64748b">ton CO₂e</small></th>
+              <th class="td-num">Total<br><small style="font-weight:400;color:#64748b">ton CO₂e</small></th>
+              <th>Fecha Guardado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="results-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TAB 4: EXPORTAR ==================== -->
+  <div class="tab-panel" id="tab-exportar">
+    <div class="section-title">Exportar Datos</div>
+    <div class="section-subtitle">Descarga los datos en formato Excel (.xlsx)</div>
+
+    <div class="export-grid">
+      <div class="export-card">
+        <div class="export-card-icon">📋</div>
+        <h3>Entradas Nuevas</h3>
+        <p>Exporta todas las entradas registradas en esta sesión con los valores calculados por categoría.</p>
+        <button class="btn btn-export" onclick="exportarEntradas()">
+          ⬇ Exportar Entradas (Excel)
+        </button>
+      </div>
+      <div class="export-card">
+        <div class="export-card-icon">📅</div>
+        <h3>Resumen Histórico 2024</h3>
+        <p>Exporta la tabla de referencia del inventario de emisiones correspondiente al año 2024.</p>
+        <button class="btn btn-export" onclick="exportarHistorico()">
+          ⬇ Exportar 2024 (Excel)
+        </button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h3>Confirmar eliminación</h3>
+    <p>Esta acción no se puede deshacer. ¿Deseas eliminar esta entrada?</p>
+    <div class="modal-actions">
+      <button class="btn btn-danger" id="modal-confirm-btn">Eliminar</button>
+      <button class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// =========================================================
+//  FACTORES DE EMISIÓN (FE)
+// =========================================================
+const FE = {
+  diesel_b10_co2: 10.149, diesel_b10_ch4: 0.00001, diesel_b10_n2o: 0.000006,
+  biodiesel_co2b: 6.882, biodiesel_ch4b: 0.000034, biodiesel_n2ob: 0.000034,
+  pct_fosil: 0.9,
+  gas_natural_co2: 1.9801, gas_natural_ch4: 0.000036, gas_natural_n2o: 0.000004,
+  glp_co2: 3.051, glp_ch4: 0.000045, glp_n2o: 0.000005,
+  pcg_co2: 1, pcg_ch4_fosil: 27, pcg_ch4_nofosil: 27, pcg_n2o: 273,
+  pcg_hfc32: 771, pcg_hfc125: 3740, pcg_hfc143a: 5810, pcg_hcfc22: 1960, pcg_r134a: 1530,
+  r507_pcg: 0.44 * 3740 + 0.56 * 5810,
+  r410a_pcg: 0.5 * 771 + 0.5 * 3740,
+  r22_pcg: 1960,
+  r404a_pcg: 0.04 * 1530 + 0.44 * 3740 + 0.52 * 5810,
+  fe_sin_2024: 0.21742,
+  papel_co2: 0.81,
+  polipropileno_co2: 2.89, polipropileno_ch4: 0.006,
+  pebd_co2: 2.08,
+  carton_co2: 0.964,
+  agua_co2_m3: 0.2815,
+  residuos_solidos_factor: 0.000027,
+  residuos_org_ch4: 0.004, residuos_org_n2o: 0.0003
+};
+
+// =========================================================
+//  DATOS HISTÓRICOS 2024
+// =========================================================
+const HIST_2024 = [
+  { centro: 'Planta de Beneficio', cat1: 9243.70, cat2: 1807.63, cat3: 726.15, cat4: 729.80 },
+  { centro: 'Toscana',             cat1:   37.09, cat2:   67.91, cat3:   0.00, cat4:  57.56 },
+  { centro: 'La Esperanza 1',      cat1:  204.96, cat2:  237.64, cat3:  61.20, cat4: 117.87 },
+  { centro: 'La Esperanza 2',      cat1:  278.50, cat2:  369.45, cat3: 124.47, cat4: 127.89 },
+  { centro: 'Villa Claudia',       cat1:  328.56, cat2:  156.96, cat3:   0.00, cat4:  86.09 },
+  { centro: 'El Bolo',             cat1:  155.16, cat2:  117.39, cat3:  22.97, cat4: 166.85 },
+  { centro: 'Barcelona',           cat1:   82.43, cat2:  202.53, cat3:  77.64, cat4: 225.21 },
+  { centro: 'Girón',               cat1:  232.92, cat2:  250.04, cat3: 131.99, cat4: 207.90 },
+  { centro: 'San Gil',             cat1:   79.44, cat2:  272.44, cat3: 235.85, cat4: 227.28 },
+  { centro: 'Tucumana',            cat1:  771.95, cat2:  575.06, cat3: 254.02, cat4: 276.66 }
+];
+HIST_2024.forEach(r => r.total = r.cat1 + r.cat2 + r.cat3 + r.cat4);
+
+// =========================================================
+//  UTILITY
+// =========================================================
+const fmt = (v, d = 2) => Number(v || 0).toLocaleString('es-CO', { minimumFractionDigits: d, maximumFractionDigits: d });
+const val = id => parseFloat(document.getElementById(id)?.value) || 0;
+
+// =========================================================
+//  CALCULOS
+// =========================================================
+function calcularEmisiones(inputs) {
+  // Cat 1.1
+  const gasNat_co2e = inputs.gas_natural_m3 * (FE.gas_natural_co2 * FE.pcg_co2 + FE.gas_natural_ch4 * FE.pcg_ch4_fosil + FE.gas_natural_n2o * FE.pcg_n2o);
+  const glp_co2e = inputs.glp_kg * (FE.glp_co2 * FE.pcg_co2 + FE.glp_ch4 * FE.pcg_ch4_fosil + FE.glp_n2o * FE.pcg_n2o);
+  const diesel_factor = FE.pct_fosil * (FE.diesel_b10_co2 * FE.pcg_co2 + FE.diesel_b10_ch4 * FE.pcg_ch4_fosil + FE.diesel_b10_n2o * FE.pcg_n2o) +
+    (1 - FE.pct_fosil) * (FE.biodiesel_co2b + FE.biodiesel_ch4b * FE.pcg_ch4_nofosil + FE.biodiesel_n2ob * FE.pcg_n2o);
+  const diesel_fija_co2e = inputs.diesel_fija_gal * diesel_factor;
+  const cat11_kg = gasNat_co2e + glp_co2e + diesel_fija_co2e;
+
+  // Cat 1.2
+  const cat12_kg = inputs.diesel_movil_gal * diesel_factor;
+
+  // Cat 1.3
+  const r507_co2e  = inputs.r507_kg * FE.r507_pcg;
+  const r410a_co2e = inputs.r410a_kg * FE.r410a_pcg;
+  const r22_co2e   = inputs.r22_kg * FE.r22_pcg;
+  const r404p_co2e = inputs.r404_planta_kg * FE.r404a_pcg;
+  const r404t_co2e = inputs.r404_thermo_kg * FE.r404a_pcg;
+  const co2_ext    = inputs.extintor_co2_kg * FE.pcg_co2;
+  const cat13_kg = r507_co2e + r410a_co2e + r22_co2e + r404p_co2e + r404t_co2e + co2_ext;
+
+  // Cat 1.4
+  const lubFactor = 0.00378541 * 0.88 * 0.42 * 0.2 * 20 * (44/12) * FE.pcg_co2;
+  const cat14_kg = (inputs.lubricantes_gal + inputs.aceites_equipos_gal + inputs.aceites_vehiculos_gal) * lubFactor * 1000;
+
+  // Cat 2
+  const cat2_kg = (inputs.energia_red_kwh / 1000) * FE.fe_sin_2024 * 1000;
+
+  // Cat 3
+  const cat3_kg = (inputs.diesel_transp_arriba_gal + inputs.diesel_transp_abajo_gal) * diesel_factor;
+
+  // Cat 4
+  const papel_kg_total = (inputs.papel_carta_resmas + inputs.papel_oficio_resmas + inputs.papel_kraft_resmas) * 2.5;
+  const cat41_kg = papel_kg_total * FE.papel_co2;
+  const cat42_kg = inputs.stretch_pebd_kg * FE.pebd_co2 + inputs.saco_pp_kg * (FE.polipropileno_co2 * FE.pcg_co2 + FE.polipropileno_ch4 * FE.pcg_ch4_fosil);
+  const cat43_kg = inputs.carton_kg * FE.carton_co2;
+  const cat44_kg = inputs.agua_m3 * FE.agua_co2_m3;
+  const cat46_kg = inputs.residuos_solidos_kg * FE.residuos_solidos_factor * 1000;
+  const cat47_kg = inputs.residuos_organicos_kg * (FE.residuos_org_ch4 * FE.pcg_ch4_nofosil + FE.residuos_org_n2o * FE.pcg_n2o);
+  const cat4_kg = cat41_kg + cat42_kg + cat43_kg + cat44_kg + cat46_kg + cat47_kg;
+
+  const cat1_ton = (cat11_kg + cat12_kg + cat13_kg + cat14_kg) / 1000;
+  const cat2_ton = cat2_kg / 1000;
+  const cat3_ton = cat3_kg / 1000;
+  const cat4_ton = cat4_kg / 1000;
+  const total_ton = cat1_ton + cat2_ton + cat3_ton + cat4_ton;
+
+  return {
+    cat11: cat11_kg/1000, cat12: cat12_kg/1000,
+    cat13: cat13_kg/1000, cat14: cat14_kg/1000,
+    cat1: cat1_ton, cat2: cat2_ton, cat3: cat3_ton, cat4: cat4_ton,
+    total: total_ton, energia_sfv_kwh: inputs.energia_sfv_kwh
+  };
+}
+
+function getFormInputs() {
+  return {
+    gas_natural_m3: val('f-gas-natural'), glp_kg: val('f-glp-kg'),
+    diesel_fija_gal: val('f-diesel-fija'), diesel_movil_gal: val('f-diesel-movil'),
+    r507_kg: val('f-r507'), r410a_kg: val('f-r410a'), r22_kg: val('f-r22'),
+    r404_planta_kg: val('f-r404-planta'), r404_thermo_kg: val('f-r404-thermo'),
+    extintor_co2_kg: val('f-extintor-co2'),
+    lubricantes_gal: val('f-lubricantes'), aceites_equipos_gal: val('f-aceites-equipos'),
+    aceites_vehiculos_gal: val('f-aceites-vehiculos'),
+    energia_red_kwh: val('f-energia-red'), energia_sfv_kwh: val('f-energia-sfv'),
+    diesel_transp_arriba_gal: val('f-diesel-arriba'), diesel_transp_abajo_gal: val('f-diesel-abajo'),
+    papel_carta_resmas: val('f-papel-carta'), papel_oficio_resmas: val('f-papel-oficio'),
+    papel_kraft_resmas: val('f-papel-kraft'),
+    stretch_pebd_kg: val('f-stretch'), saco_pp_kg: val('f-saco-pp'),
+    carton_kg: val('f-carton'), agua_m3: val('f-agua'),
+    residuos_solidos_kg: val('f-residuos-solidos'), residuos_organicos_kg: val('f-residuos-organicos')
+  };
+}
+
+// =========================================================
+//  RECALCULAR (LIVE PREVIEW)
+// =========================================================
+function recalcular() {
+  const inputs = getFormInputs();
+  const r = calcularEmisiones(inputs);
+
+  const setTxt = (id, v) => { const el = document.getElementById(id); if(el) el.textContent = fmt(v); };
+  setTxt('prev-cat1', r.cat1);
+  setTxt('prev-cat11', r.cat11);
+  setTxt('prev-cat12', r.cat12);
+  setTxt('prev-cat13', r.cat13);
+  setTxt('prev-cat14', r.cat14);
+  setTxt('prev-cat2', r.cat2);
+  setTxt('prev-cat3', r.cat3);
+  setTxt('prev-cat4', r.cat4);
+  setTxt('prev-total', r.total);
+
+  // SFV
+  const sfvBox = document.getElementById('preview-sfv-box');
+  if (r.energia_sfv_kwh > 0) {
+    sfvBox.style.display = 'block';
+    document.getElementById('prev-sfv-val').textContent = fmt(r.energia_sfv_kwh, 0);
+  } else {
+    sfvBox.style.display = 'none';
+  }
+
+  // Subtotals in accordion headers
+  updateSubtotal('sub-11', r.cat11);
+  updateSubtotal('sub-12', r.cat12);
+  updateSubtotal('sub-13', r.cat13);
+  updateSubtotal('sub-14', r.cat14);
+  updateSubtotal('sub-2', r.cat2);
+  updateSubtotal('sub-3', r.cat3);
+
+  // Cat 4 subtotals
+  const inputs2 = inputs;
+  const papel_kg = (inputs2.papel_carta_resmas + inputs2.papel_oficio_resmas + inputs2.papel_kraft_resmas) * 2.5;
+  const cat41 = (papel_kg * FE.papel_co2) / 1000;
+  const cat42 = (inputs2.stretch_pebd_kg * FE.pebd_co2 + inputs2.saco_pp_kg * (FE.polipropileno_co2 * FE.pcg_co2 + FE.polipropileno_ch4 * FE.pcg_ch4_fosil)) / 1000;
+  const cat43 = (inputs2.carton_kg * FE.carton_co2) / 1000;
+  const cat44 = (inputs2.agua_m3 * FE.agua_co2_m3) / 1000;
+  const cat46 = (inputs2.residuos_solidos_kg * FE.residuos_solidos_factor * 1000 + inputs2.residuos_organicos_kg * (FE.residuos_org_ch4 * FE.pcg_ch4_nofosil + FE.residuos_org_n2o * FE.pcg_n2o)) / 1000;
+  updateSubtotal('sub-41', cat41);
+  updateSubtotal('sub-42', cat42);
+  updateSubtotal('sub-43', cat43);
+  updateSubtotal('sub-44', cat44);
+  updateSubtotal('sub-46', cat46);
+}
+
+function updateSubtotal(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (val > 0.0001) {
+    el.textContent = '— ' + fmt(val) + ' ton CO₂e';
+    el.classList.add('has-value');
+  } else {
+    el.textContent = '—';
+    el.classList.remove('has-value');
+  }
+}
+
+// =========================================================
+//  ACCORDION
+// =========================================================
+function toggleAccordion(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.toggle('open');
+}
+
+// =========================================================
+//  TABS
+// =========================================================
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    if (btn.dataset.tab === 'resultados') renderResultados();
+  });
+});
+
+// =========================================================
+//  GUARDAR / LIMPIAR
+// =========================================================
+function guardarEntrada() {
+  const periodo = document.getElementById('f-periodo').value.trim();
+  const centro = document.getElementById('f-centro').value;
+  if (!periodo) { showToast('Ingresa un período para continuar.', 'error'); return; }
+  if (!centro)  { showToast('Selecciona un centro de trabajo.', 'error'); return; }
+
+  const inputs = getFormInputs();
+  const resultados = calcularEmisiones(inputs);
+
+  const entry = {
+    id: Date.now(),
+    periodo, centro, inputs, resultados,
+    fecha_guardado: new Date().toISOString()
+  };
+
+  const entries = getEntries();
+  entries.push(entry);
+  localStorage.setItem('gei_entries', JSON.stringify(entries));
+
+  showToast('Entrada guardada correctamente.');
+  limpiarFormulario();
+}
+
+function limpiarFormulario() {
+  document.getElementById('f-periodo').value = '';
+  document.getElementById('f-centro').value = '';
+  const inputs = ['f-gas-natural','f-glp-kg','f-diesel-fija','f-diesel-movil',
+    'f-r507','f-r410a','f-r22','f-r404-planta','f-r404-thermo','f-extintor-co2',
+    'f-lubricantes','f-aceites-equipos','f-aceites-vehiculos',
+    'f-energia-red','f-energia-sfv','f-diesel-arriba','f-diesel-abajo',
+    'f-papel-carta','f-papel-oficio','f-papel-kraft',
+    'f-stretch','f-saco-pp','f-carton','f-agua',
+    'f-residuos-solidos','f-residuos-organicos'];
+  inputs.forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  recalcular();
+}
+
+function getEntries() {
+  try { return JSON.parse(localStorage.getItem('gei_entries') || '[]'); } catch(e) { return []; }
+}
+
+// =========================================================
+//  RESULTADOS
+// =========================================================
+let barChart = null;
+let stackedChart = null;
+
+function renderResultados() {
+  const entries = getEntries();
+  const content = document.getElementById('results-content');
+  const empty = document.getElementById('results-empty');
+
+  if (entries.length === 0) {
+    content.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+  content.style.display = 'block';
+  empty.style.display = 'none';
+
+  // KPIs
+  const totalTon = entries.reduce((s, e) => s + e.resultados.total, 0);
+  const totalDir = entries.reduce((s, e) => s + e.resultados.cat1, 0);
+  const totalIndir = entries.reduce((s, e) => s + e.resultados.cat2 + e.resultados.cat3 + e.resultados.cat4, 0);
+  document.getElementById('results-kpis').innerHTML = `
+    <div class="card"><div class="card-title">Total GEI Ingresado</div><div class="card-value green">${fmt(totalTon)}</div><div class="card-sub">ton CO₂e · ${entries.length} entrada(s)</div></div>
+    <div class="card"><div class="card-title">Cat 1 — Directas</div><div class="card-value">${fmt(totalDir)}</div><div class="card-sub">ton CO₂e</div></div>
+    <div class="card"><div class="card-title">Cat 2+3+4 — Indirectas</div><div class="card-value">${fmt(totalIndir)}</div><div class="card-sub">ton CO₂e</div></div>
+    <div class="card"><div class="card-title">Entradas Guardadas</div><div class="card-value">${entries.length}</div><div class="card-sub">en localStorage</div></div>
+  `;
+
+  // Table
+  const tbody = document.getElementById('results-tbody');
+  tbody.innerHTML = entries.map(e => `
+    <tr>
+      <td>${e.periodo}</td>
+      <td>${e.centro}</td>
+      <td class="td-num">${fmt(e.resultados.cat1)}</td>
+      <td class="td-num">${fmt(e.resultados.cat2)}</td>
+      <td class="td-num">${fmt(e.resultados.cat3)}</td>
+      <td class="td-num">${fmt(e.resultados.cat4)}</td>
+      <td class="td-num td-total">${fmt(e.resultados.total)}</td>
+      <td style="color:var(--muted);font-size:11px;">${new Date(e.fecha_guardado).toLocaleDateString('es-CO')}</td>
+      <td><button class="del-btn" title="Eliminar" onclick="confirmarEliminar(${e.id})">🗑</button></td>
+    </tr>
+  `).join('');
+
+  // Charts
+  const labels = entries.map(e => e.periodo + ' · ' + e.centro.split(' ')[0]);
+  const totals = entries.map(e => +e.resultados.total.toFixed(4));
+  const cat1s  = entries.map(e => +e.resultados.cat1.toFixed(4));
+  const cat2s  = entries.map(e => +e.resultados.cat2.toFixed(4));
+  const cat3s  = entries.map(e => +e.resultados.cat3.toFixed(4));
+  const cat4s  = entries.map(e => +e.resultados.cat4.toFixed(4));
+
+  const chartDefaults = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 } } } },
+    scales: {
+      x: { ticks: { color: '#94a3b8', font: { family: 'Inter', size: 10 } }, grid: { color: 'rgba(42,48,69,0.5)' } },
+      y: { ticks: { color: '#94a3b8', font: { family: 'Inter', size: 10 } }, grid: { color: 'rgba(42,48,69,0.5)' } }
+    }
+  };
+
+  if (barChart) barChart.destroy();
+  barChart = new Chart(document.getElementById('chart-bar'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{ label: 'Total ton CO₂e', data: totals, backgroundColor: 'rgba(34,197,94,0.7)', borderColor: '#22c55e', borderWidth: 1, borderRadius: 4 }]
+    },
+    options: { ...chartDefaults }
+  });
+
+  if (stackedChart) stackedChart.destroy();
+  stackedChart = new Chart(document.getElementById('chart-stacked'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Cat 1', data: cat1s, backgroundColor: 'rgba(34,197,94,0.75)', stack: 'a' },
+        { label: 'Cat 2', data: cat2s, backgroundColor: 'rgba(59,130,246,0.75)', stack: 'a' },
+        { label: 'Cat 3', data: cat3s, backgroundColor: 'rgba(245,158,11,0.75)', stack: 'a' },
+        { label: 'Cat 4', data: cat4s, backgroundColor: 'rgba(139,92,246,0.75)', stack: 'a' }
+      ]
+    },
+    options: { ...chartDefaults, scales: { ...chartDefaults.scales, x: { ...chartDefaults.scales.x, stacked: true }, y: { ...chartDefaults.scales.y, stacked: true } } }
+  });
+}
+
+// =========================================================
+//  DELETE
+// =========================================================
+let pendingDeleteId = null;
+
+function confirmarEliminar(id) {
+  pendingDeleteId = id;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function cerrarModal() {
+  pendingDeleteId = null;
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+document.getElementById('modal-confirm-btn').addEventListener('click', () => {
+  if (pendingDeleteId === null) return;
+  const entries = getEntries().filter(e => e.id !== pendingDeleteId);
+  localStorage.setItem('gei_entries', JSON.stringify(entries));
+  cerrarModal();
+  renderResultados();
+  showToast('Entrada eliminada.');
+});
+
+document.getElementById('modal-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal-overlay')) cerrarModal();
+});
+
+// =========================================================
+//  TOAST
+// =========================================================
+function showToast(msg, type = 'success') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = 'toast' + (type === 'error' ? ' error' : '');
+  toast.innerHTML = (type === 'error' ? '⚠️ ' : '✅ ') + msg;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add('out');
+    setTimeout(() => toast.remove(), 350);
+  }, 3000);
+}
+
+// =========================================================
+//  EXPORTAR
+// =========================================================
+function exportarEntradas() {
+  const entries = getEntries();
+  if (entries.length === 0) { showToast('No hay entradas para exportar.', 'error'); return; }
+  const rows = entries.map(e => ({
+    'Período': e.periodo,
+    'Centro de Trabajo': e.centro,
+    'Cat 1 — Directas (ton CO2e)': +e.resultados.cat1.toFixed(4),
+    'Cat 1.1 — Comb. Estacionaria': +e.resultados.cat11.toFixed(4),
+    'Cat 1.2 — Comb. Móvil': +e.resultados.cat12.toFixed(4),
+    'Cat 1.3 — Fugitivas': +e.resultados.cat13.toFixed(4),
+    'Cat 1.4 — Lubricantes': +e.resultados.cat14.toFixed(4),
+    'Cat 2 — Energía (ton CO2e)': +e.resultados.cat2.toFixed(4),
+    'Cat 3 — Transporte (ton CO2e)': +e.resultados.cat3.toFixed(4),
+    'Cat 4 — Otras Indirectas (ton CO2e)': +e.resultados.cat4.toFixed(4),
+    'TOTAL (ton CO2e)': +e.resultados.total.toFixed(4),
+    'Energía SFV (kWh)': e.resultados.energia_sfv_kwh || 0,
+    'Fecha de Guardado': new Date(e.fecha_guardado).toLocaleDateString('es-CO')
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Entradas GEI');
+  XLSX.writeFile(wb, 'GEI_San_Marino_Entradas.xlsx');
+  showToast('Archivo exportado correctamente.');
+}
+
+function exportarHistorico() {
+  const rows = HIST_2024.map(r => ({
+    'Centro de Trabajo': r.centro,
+    'Cat 1 — Directas (ton CO2e)': r.cat1,
+    'Cat 2 — Energía (ton CO2e)': r.cat2,
+    'Cat 3 — Transporte (ton CO2e)': r.cat3,
+    'Cat 4 — Otras Indirectas (ton CO2e)': r.cat4,
+    'TOTAL (ton CO2e)': +r.total.toFixed(2)
+  }));
+  rows.push({
+    'Centro de Trabajo': 'TOTAL',
+    'Cat 1 — Directas (ton CO2e)': HIST_2024.reduce((s,r)=>s+r.cat1,0),
+    'Cat 2 — Energía (ton CO2e)': HIST_2024.reduce((s,r)=>s+r.cat2,0),
+    'Cat 3 — Transporte (ton CO2e)': HIST_2024.reduce((s,r)=>s+r.cat3,0),
+    'Cat 4 — Otras Indirectas (ton CO2e)': HIST_2024.reduce((s,r)=>s+r.cat4,0),
+    'TOTAL (ton CO2e)': +HIST_2024.reduce((s,r)=>s+r.total,0).toFixed(2)
+  });
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Histórico 2024');
+  XLSX.writeFile(wb, 'GEI_San_Marino_Historico_2024.xlsx');
+  showToast('Histórico 2024 exportado correctamente.');
+}
+
+// =========================================================
+//  RENDER HISTÓRICO
+// =========================================================
+(function renderHistorico() {
+  const tbody = document.getElementById('hist-tbody');
+  tbody.innerHTML = HIST_2024.map(r => `
+    <tr>
+      <td><strong>${r.centro}</strong></td>
+      <td class="td-num">${fmt(r.cat1)}</td>
+      <td class="td-num">${fmt(r.cat2)}</td>
+      <td class="td-num">${fmt(r.cat3)}</td>
+      <td class="td-num">${fmt(r.cat4)}</td>
+      <td class="td-num td-total">${fmt(r.total)}</td>
+    </tr>
+  `).join('');
+
+  const totals = ['cat1','cat2','cat3','cat4','total'].map(k => HIST_2024.reduce((s,r)=>s+r[k],0));
+  document.getElementById('hist-tfoot').innerHTML = `
+    <tr>
+      <td>TOTAL</td>
+      ${totals.map((v,i) => `<td class="td-num">${fmt(v)}</td>`).join('')}
+    </tr>
+  `;
+
+  // Donut chart
+  const COLORS = [
+    '#22c55e','#3b82f6','#f59e0b','#8b5cf6','#ef4444',
+    '#14b8a6','#f97316','#06b6d4','#a78bfa','#84cc16'
+  ];
+  new Chart(document.getElementById('hist-donut'), {
+    type: 'doughnut',
+    data: {
+      labels: HIST_2024.map(r => r.centro),
+      datasets: [{ data: HIST_2024.map(r => +r.total.toFixed(2)), backgroundColor: COLORS, borderColor: '#1a1f2e', borderWidth: 2 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'right', labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 }, padding: 12, boxWidth: 14 } },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${ctx.label}: ${fmt(ctx.parsed)} ton CO₂e`
+          }
+        }
+      },
+      cutout: '62%'
+    }
+  });
+})();
+
+// Init
+recalcular();
+</script>
+</body>
+</html>

@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inventario GEI 2024 – AGROAVÍCOLA SAN MARINO</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0f1117;
+      --card:      #1a1f2e;
+      --card-alt:  #1e2538;
+      --border:    #2a3045;
+      --accent:    #22c55e;
+      --accent-d:  #16a34a;
+      --blue:      #3b82f6;
+      --blue-d:    #2563eb;
+      --red:       #ef4444;
+      --orange:    #f97316;
+      --teal:      #14b8a6;
+      --text:      #f1f5f9;
+      --muted:     #94a3b8;
+      --muted-d:   #64748b;
+      --cat1:      #ef4444;
+      --cat2:      #3b82f6;
+      --cat3:      #f97316;
+      --cat4:      #22c55e;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    /* HEADER */
+    .header {
+      background: linear-gradient(135deg, #0d1117 0%, #1a2340 50%, #0f2d1a 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 2rem 2.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 80% at 80% 50%, rgba(34,197,94,0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .header-inner {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .logo-icon {
+      width: 52px;
+      height: 52px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-d));
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      box-shadow: 0 0 24px rgba(34,197,94,0.35);
+      flex-shrink: 0;
+    }
+    .header-title h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--text);
+    }
+    .header-title p {
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-weight: 400;
+      margin-top: 2px;
+    }
+    .header-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.35rem;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    .badge-green { background: rgba(34,197,94,0.15); color: var(--accent); border: 1px solid rgba(34,197,94,0.3); }
+    .badge-blue  { background: rgba(59,130,246,0.15); color: var(--blue);   border: 1px solid rgba(59,130,246,0.3); }
+    .header-meta span {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    /* NAV TABS */
+    .nav-tabs-wrapper {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(15,17,23,0.95);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+    }
+    .nav-tabs {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: flex;
+      gap: 0;
+    }
+    .nav-tab {
+      padding: 0.9rem 1.5rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--muted);
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color 0.2s, border-color 0.2s;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+    }
+    .nav-tab:hover { color: var(--text); }
+    .nav-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    /* TAB PANELS */
+    .tab-panel {
+      opacity: 0;
+      pointer-events: none;
+      position: absolute;
+      width: 100%;
+      transition: opacity 0.35s ease;
+    }
+    .tab-panel.active {
+      opacity: 1;
+      pointer-events: auto;
+      position: relative;
+    }
+    .tabs-container {
+      position: relative;
+    }
+
+    /* MAIN WRAPPER */
+    .main {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 2rem 2rem 3rem;
+    }
+
+    /* SECTION TITLE */
+    .section-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted-d);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* KPI CARDS */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .kpi-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.4rem 1.5rem;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .kpi-card:hover {
+      border-color: rgba(34,197,94,0.4);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+    }
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: 14px 14px 0 0;
+    }
+    .kpi-card.total::before   { background: linear-gradient(90deg, var(--accent), #6ee7b7); }
+    .kpi-card.cat1::before    { background: linear-gradient(90deg, var(--cat1), #fca5a5); }
+    .kpi-card.cat2::before    { background: linear-gradient(90deg, var(--cat2), #93c5fd); }
+    .kpi-card.cat34::before   { background: linear-gradient(90deg, var(--cat3), var(--cat4)); }
+    .kpi-card.renewable::before { background: linear-gradient(90deg, #a855f7, #ec4899); }
+
+    .kpi-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .kpi-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot-green   { background: var(--accent); }
+    .dot-red     { background: var(--cat1); }
+    .dot-blue    { background: var(--cat2); }
+    .dot-orange  { background: var(--cat3); }
+    .dot-purple  { background: #a855f7; }
+
+    .kpi-value {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 0.4rem;
+    }
+    .kpi-card.total .kpi-value   { color: var(--accent); }
+    .kpi-card.cat1  .kpi-value   { color: var(--cat1); }
+    .kpi-card.cat2  .kpi-value   { color: var(--cat2); }
+    .kpi-card.cat34 .kpi-value   { color: var(--cat3); }
+    .kpi-card.renewable .kpi-value { color: #c084fc; }
+
+    .kpi-unit {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-left: 0.25rem;
+    }
+    .kpi-sub {
+      font-size: 0.75rem;
+      color: var(--muted-d);
+      margin-top: 0.35rem;
+    }
+    .kpi-pct {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.15rem 0.5rem;
+      border-radius: 6px;
+      margin-top: 0.5rem;
+    }
+    .pct-red    { background: rgba(239,68,68,0.12);   color: var(--cat1); }
+    .pct-blue   { background: rgba(59,130,246,0.12);  color: var(--cat2); }
+    .pct-orange { background: rgba(249,115,22,0.12);  color: var(--cat3); }
+
+    .info-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 0.2rem 0.55rem;
+      border-radius: 6px;
+      margin-top: 0.5rem;
+      background: rgba(168,85,247,0.12);
+      color: #c084fc;
+    }
+
+    /* CHARTS GRID */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 900px) {
+      .charts-grid { grid-template-columns: 1fr; }
+    }
+    .chart-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem;
+    }
+    .chart-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.2rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .chart-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .chart-subtitle {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* CHART FILTER BUTTONS */
+    .chart-filters {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.18s;
+      background: rgba(255,255,255,0.05);
+      color: var(--muted);
+    }
+    .filter-btn:hover { color: var(--text); background: rgba(255,255,255,0.1); }
+    .filter-btn.active-cat1 { background: rgba(239,68,68,0.18); color: var(--cat1); border-color: rgba(239,68,68,0.35); }
+    .filter-btn.active-cat2 { background: rgba(59,130,246,0.18); color: var(--cat2); border-color: rgba(59,130,246,0.35); }
+    .filter-btn.active-cat3 { background: rgba(249,115,22,0.18); color: var(--cat3); border-color: rgba(249,115,22,0.35); }
+    .filter-btn.active-cat4 { background: rgba(34,197,94,0.18); color: var(--cat4); border-color: rgba(34,197,94,0.35); }
+    .filter-btn.inactive { opacity: 0.35; }
+
+    .chart-wrap { position: relative; height: 300px; }
+    .chart-wrap-sm { position: relative; height: 260px; }
+
+    /* TABLE SECTION */
+    .table-section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .table-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.2rem;
+      flex-wrap: wrap;
+    }
+    .search-input {
+      flex: 1;
+      min-width: 200px;
+      max-width: 320px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.5rem 0.85rem;
+      color: var(--text);
+      font-size: 0.82rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-input::placeholder { color: var(--muted-d); }
+    .search-input:focus { border-color: var(--accent); }
+
+    .table-wrap { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+    thead th {
+      padding: 0.65rem 1rem;
+      text-align: left;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+      transition: color 0.15s;
+    }
+    thead th:hover { color: var(--text); }
+    thead th .sort-icon {
+      display: inline-block;
+      margin-left: 4px;
+      opacity: 0.4;
+      font-style: normal;
+      transition: opacity 0.15s;
+    }
+    thead th.sorted .sort-icon { opacity: 1; color: var(--accent); }
+    tbody tr {
+      border-bottom: 1px solid rgba(42,48,69,0.5);
+      transition: background 0.15s;
+    }
+    tbody tr:hover { background: rgba(255,255,255,0.03); }
+    tbody tr.highlighted { background: rgba(34,197,94,0.07); }
+    tbody td {
+      padding: 0.75rem 1rem;
+      vertical-align: middle;
+    }
+    .td-center { text-align: right; font-variant-numeric: tabular-nums; }
+    .td-cat {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+    }
+    .td-cat1 { background: rgba(239,68,68,0.12);  color: var(--cat1); }
+    .td-cat2 { background: rgba(59,130,246,0.12); color: var(--cat2); }
+    .td-cat3 { background: rgba(249,115,22,0.12); color: var(--cat3); }
+    .td-cat4 { background: rgba(34,197,94,0.12);  color: var(--cat4); }
+
+    /* PROGRESS BAR IN TABLE */
+    .pb-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .pb-track {
+      flex: 1;
+      height: 5px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 3px;
+      overflow: hidden;
+      min-width: 60px;
+    }
+    .pb-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: var(--accent);
+      transition: width 0.6s ease;
+    }
+    .pb-val {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* DIRECT/INDIRECT */
+    .scope-chips { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+    .scope-chip {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.12rem 0.45rem;
+      border-radius: 4px;
+    }
+    .chip-direct   { background: rgba(239,68,68,0.12);  color: var(--cat1); }
+    .chip-indirect { background: rgba(59,130,246,0.12); color: var(--cat2); }
+
+    /* DONUT LEGEND */
+    .donut-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      margin-top: 1rem;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.73rem;
+      cursor: pointer;
+      padding: 0.2rem 0.4rem;
+      border-radius: 6px;
+      transition: background 0.15s;
+    }
+    .legend-item:hover { background: rgba(255,255,255,0.05); }
+    .legend-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .legend-name { flex: 1; color: var(--muted); }
+    .legend-val  { font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+    .legend-pct  { color: var(--muted-d); }
+
+    /* SUMMARY HIGHLIGHT CARDS */
+    .highlight-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .highlight-card {
+      background: var(--card-alt);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.2rem 1.4rem;
+    }
+    .highlight-card h4 {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .hc-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.35rem 0;
+      border-bottom: 1px solid rgba(42,48,69,0.4);
+      font-size: 0.8rem;
+    }
+    .hc-row:last-child { border-bottom: none; }
+    .hc-label { color: var(--muted); }
+    .hc-val   { font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+
+    /* ─── POR CENTRO DE TRABAJO ─── */
+    .centers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 480px) {
+      .centers-grid { grid-template-columns: 1fr; }
+    }
+
+    .center-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+    .center-card:hover {
+      border-color: rgba(34,197,94,0.35);
+      box-shadow: 0 6px 30px rgba(0,0,0,0.35);
+    }
+    .center-card.highlighted-card {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(34,197,94,0.25), 0 6px 30px rgba(0,0,0,0.35);
+    }
+
+    .center-card-header {
+      padding: 1.2rem 1.4rem 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+    .center-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .center-type-badge {
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 0.2rem 0.55rem;
+      border-radius: 6px;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .type-planta { background: rgba(34,197,94,0.12); color: var(--accent); border: 1px solid rgba(34,197,94,0.2); }
+    .type-incubacion { background: rgba(59,130,246,0.12); color: var(--blue); border: 1px solid rgba(59,130,246,0.2); }
+
+    .center-kpi-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .center-kpi-item {
+      padding: 0.75rem 0.9rem;
+      border-right: 1px solid var(--border);
+      text-align: center;
+    }
+    .center-kpi-item:last-child { border-right: none; }
+    .center-kpi-label {
+      font-size: 0.62rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted-d);
+      margin-bottom: 0.3rem;
+    }
+    .center-kpi-val {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+    .center-kpi-val.accent { color: var(--accent); }
+    .center-kpi-val.red    { color: var(--cat1); }
+    .center-kpi-val.blue   { color: var(--cat2); }
+
+    .center-chart-area {
+      padding: 1rem 1.4rem 0.5rem;
+    }
+    .center-chart-title {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted-d);
+      margin-bottom: 0.75rem;
+    }
+    .center-mini-chart { position: relative; height: 130px; }
+
+    .cat-progress-list {
+      padding: 0.5rem 1.4rem 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+    .cat-progress-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.73rem;
+    }
+    .cat-progress-label {
+      width: 42px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .cat-progress-track {
+      flex: 1;
+      height: 6px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .cat-progress-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.8s ease;
+    }
+    .fill-cat1 { background: var(--cat1); }
+    .fill-cat2 { background: var(--cat2); }
+    .fill-cat3 { background: var(--cat3); }
+    .fill-cat4 { background: var(--cat4); }
+    .cat-progress-val {
+      width: 65px;
+      text-align: right;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      flex-shrink: 0;
+      font-size: 0.7rem;
+    }
+
+    /* ACCORDION */
+    .accordion-toggle {
+      width: 100%;
+      background: none;
+      border: none;
+      border-top: 1px solid var(--border);
+      padding: 0.7rem 1.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-family: inherit;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      transition: color 0.15s, background 0.15s;
+    }
+    .accordion-toggle:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+    .accordion-icon {
+      font-size: 0.8rem;
+      transition: transform 0.3s ease;
+    }
+    .accordion-toggle.open .accordion-icon { transform: rotate(180deg); }
+
+    .accordion-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease;
+    }
+    .accordion-body.open { max-height: 500px; }
+
+    .accordion-content {
+      padding: 1rem 1.4rem 1.2rem;
+      border-top: 1px solid rgba(42,48,69,0.5);
+    }
+    .resource-title {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted-d);
+      margin-bottom: 0.6rem;
+    }
+    .resource-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .resource-chip {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 6px;
+      padding: 0.25rem 0.6rem;
+      font-size: 0.71rem;
+      color: var(--muted);
+    }
+    .resource-chip strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* FOOTER */
+    .footer {
+      border-top: 1px solid var(--border);
+      padding: 1.5rem 2.5rem;
+      background: var(--card);
+    }
+    .footer-inner {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .footer-text {
+      font-size: 0.75rem;
+      color: var(--muted-d);
+    }
+    .footer-badges { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <div class="header-logo">
+      <div class="logo-icon">🌿</div>
+      <div class="header-title">
+        <h1>Inventario de Gases de Efecto Invernadero 2024</h1>
+        <p>AGROAVÍCOLA SAN MARINO S.A. — Alcance: Organizacional · Periodo: Enero–Diciembre 2024</p>
+      </div>
+    </div>
+    <div class="header-meta">
+      <span class="badge badge-green">✓ ISO 14064-1</span>
+      <span>Versión 1.0 · Abril 2025</span>
+    </div>
+  </div>
+</header>
+
+<!-- NAV TABS -->
+<div class="nav-tabs-wrapper">
+  <div class="nav-tabs">
+    <button class="nav-tab active" data-tab="resumen">Resumen General</button>
+    <button class="nav-tab" data-tab="centros">Por Centro de Trabajo</button>
+  </div>
+</div>
+
+<!-- TABS CONTAINER -->
+<div class="tabs-container">
+
+  <!-- TAB: RESUMEN GENERAL -->
+  <div class="tab-panel active" id="tab-resumen">
+    <div class="main">
+
+      <div class="section-title">Indicadores Principales</div>
+      <div class="kpi-grid">
+        <div class="kpi-card total">
+          <div class="kpi-label"><span class="kpi-dot dot-green"></span>Total Emisiones</div>
+          <div class="kpi-value"><span class="kpi-counter" data-target="20414.22">0</span><span class="kpi-unit">ton CO₂e</span></div>
+          <div class="kpi-sub">Todas las categorías · Año 2024</div>
+        </div>
+        <div class="kpi-card cat1">
+          <div class="kpi-label"><span class="kpi-dot dot-red"></span>Categoría 1 — Directas</div>
+          <div class="kpi-value"><span class="kpi-counter" data-target="2169.71">0</span><span class="kpi-unit">ton CO₂e</span></div>
+          <div class="kpi-sub">Combustión estacionaria y móvil, refrigerantes</div>
+          <div class="kpi-pct pct-red">▲ 10.6% del total</div>
+        </div>
+        <div class="kpi-card cat2">
+          <div class="kpi-label"><span class="kpi-dot dot-blue"></span>Categoría 2 — Energía Indirecta</div>
+          <div class="kpi-value"><span class="kpi-counter" data-target="4057.05">0</span><span class="kpi-unit">ton CO₂e</span></div>
+          <div class="kpi-sub">Electricidad red y fuentes externas</div>
+          <div class="kpi-pct pct-blue">▲ 19.9% del total</div>
+        </div>
+        <div class="kpi-card cat34">
+          <div class="kpi-label"><span class="kpi-dot dot-orange"></span>Categorías 3 y 4 — Otras Indirectas</div>
+          <div class="kpi-value"><span class="kpi-counter" data-target="14187.46">0</span><span class="kpi-unit">ton CO₂e</span></div>
+          <div class="kpi-sub">Cadena de valor · Transporte · Residuos</div>
+          <div class="kpi-pct pct-orange">▲ 69.5% del total</div>
+        </div>
+        <div class="kpi-card renewable">
+          <div class="kpi-label"><span class="kpi-dot dot-purple"></span>Generación Renovable</div>
+          <div class="kpi-value"><span class="kpi-counter" data-target="1448.07">0</span><span class="kpi-unit">MWh</span></div>
+          <div class="kpi-sub">SFV (sistemas fotovoltaicos)</div>
+          <div class="info-badge">🌞 Energía solar</div>
+        </div>
+      </div>
+
+      <div class="section-title">Distribución de Emisiones</div>
+      <div class="charts-grid">
+
+        <!-- BAR CHART -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Emisiones por Centro de Trabajo</div>
+              <div class="chart-subtitle">ton CO₂e · Categorías 1–4</div>
+            </div>
+            <div class="chart-filters" id="barChartFilters">
+              <button class="filter-btn active-cat1" data-cat="0">Cat.1</button>
+              <button class="filter-btn active-cat2" data-cat="1">Cat.2</button>
+              <button class="filter-btn active-cat3" data-cat="2">Cat.3</button>
+              <button class="filter-btn active-cat4" data-cat="3">Cat.4</button>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="barChart"></canvas>
+          </div>
+        </div>
+
+        <!-- DONUT CHART -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Participación por Centro de Trabajo</div>
+              <div class="chart-subtitle">% sobre total de emisiones</div>
+            </div>
+          </div>
+          <div class="chart-wrap-sm">
+            <canvas id="donutChart"></canvas>
+          </div>
+          <div class="donut-legend" id="donutLegend"></div>
+        </div>
+
+      </div>
+
+      <div class="section-title">Resumen por Tipo de Fuente</div>
+      <div class="highlight-grid">
+        <div class="highlight-card">
+          <h4>🔴 Categoría 1 — Directas</h4>
+          <div class="hc-row"><span class="hc-label">Gas Natural</span><span class="hc-val">318,689 m³</span></div>
+          <div class="hc-row"><span class="hc-label">GLP</span><span class="hc-val">32,482 kg</span></div>
+          <div class="hc-row"><span class="hc-label">Diesel Estacionaria</span><span class="hc-val">36,342 gal</span></div>
+          <div class="hc-row"><span class="hc-label">Diesel Móvil</span><span class="hc-val">233,845 gal</span></div>
+          <div class="hc-row"><span class="hc-label">Refrigerantes (HFCs)</span><span class="hc-val">Multiple gases</span></div>
+        </div>
+        <div class="highlight-card">
+          <h4>🔵 Categoría 2 — Energía Eléctrica</h4>
+          <div class="hc-row"><span class="hc-label">Energía Red Nacional</span><span class="hc-val">16,211,941 kWh</span></div>
+          <div class="hc-row"><span class="hc-label">Factor de emisión red</span><span class="hc-val">0.2504 ton CO₂e/MWh</span></div>
+          <div class="hc-row"><span class="hc-label">Generación solar (SFV)</span><span class="hc-val">1,448,071 kWh</span></div>
+          <div class="hc-row"><span class="hc-label">Factor de emisión SFV</span><span class="hc-val">0.0 ton CO₂e/MWh</span></div>
+        </div>
+        <div class="highlight-card">
+          <h4>🟠 Categorías 3 y 4 — Otras Indirectas</h4>
+          <div class="hc-row"><span class="hc-label">Consumo de Agua</span><span class="hc-val">383,415 m³</span></div>
+          <div class="hc-row"><span class="hc-label">Papel (Cat.3)</span><span class="hc-val">1,118 resmas</span></div>
+          <div class="hc-row"><span class="hc-label">Cartón (Cat.3)</span><span class="hc-val">70,308 kg</span></div>
+          <div class="hc-row"><span class="hc-label">Diesel Transporte (Cat.4)</span><span class="hc-val">64,128 gal</span></div>
+        </div>
+      </div>
+
+      <div class="section-title">Detalle por Centro de Trabajo</div>
+      <div class="table-section">
+        <div class="table-controls">
+          <input class="search-input" type="text" id="tableSearch" placeholder="Buscar centro de trabajo..." />
+        </div>
+        <div class="table-wrap">
+          <table id="mainTable">
+            <thead>
+              <tr>
+                <th data-col="name">Centro de Trabajo <i class="sort-icon">↕</i></th>
+                <th data-col="cat1" class="td-center">Cat.1 <i class="sort-icon">↕</i></th>
+                <th data-col="cat2" class="td-center">Cat.2 <i class="sort-icon">↕</i></th>
+                <th data-col="cat3" class="td-center">Cat.3 <i class="sort-icon">↕</i></th>
+                <th data-col="cat4" class="td-center">Cat.4 <i class="sort-icon">↕</i></th>
+                <th data-col="directas" class="td-center">Directas <i class="sort-icon">↕</i></th>
+                <th data-col="indirectas" class="td-center">Indirectas <i class="sort-icon">↕</i></th>
+                <th data-col="total" class="td-center">Total ton CO₂e <i class="sort-icon">↕</i></th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /main -->
+  </div><!-- /tab-resumen -->
+
+  <!-- TAB: POR CENTRO DE TRABAJO -->
+  <div class="tab-panel" id="tab-centros">
+    <div class="main">
+      <div class="section-title">Centros de Trabajo — Detalle Completo</div>
+      <div class="centers-grid" id="centersGrid"></div>
+    </div>
+  </div>
+
+</div><!-- /tabs-container -->
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <p class="footer-text">AGROAVÍCOLA SAN MARINO S.A. — Inventario GEI 2024 · Datos preliminares sujetos a verificación externa</p>
+    <div class="footer-badges">
+      <span class="badge badge-green">✓ ISO 14064-1:2018</span>
+      <span class="badge badge-blue">📊 Año base 2024</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────────────────
+const TOTAL_GLOBAL = 20414.22;
+
+const centers = [
+  {
+    id: 1,
+    name: 'Planta de Beneficio',
+    tipo: 'Planta Beneficio',
+    cat1: 9243.70, cat2: 1807.63, cat3: 726.15, cat4: 729.80,
+    directas: 10239.67, indirectas: 4267.59, total: 14507.25, pct: 71.1,
+    resources: [
+      { label: 'Gas Natural', val: '317,527 m³' },
+      { label: 'Diesel Móvil', val: '137,248 gal' },
+      { label: 'Refrigerante R507', val: '1,750 kg' },
+      { label: 'Energía Red', val: '8,313,985 kWh' },
+      { label: 'Papel', val: '1,118 resmas' },
+      { label: 'Cartón', val: '70,308 kg' },
+      { label: 'Agua', val: '42,079 m³' }
+    ]
+  },
+  {
+    id: 2,
+    name: 'Toscana',
+    tipo: 'Incubación',
+    cat1: 37.09, cat2: 67.91, cat3: 0, cat4: 57.56,
+    directas: 37.09, indirectas: 125.48, total: 162.57, pct: 0.8,
+    resources: [
+      { label: 'GLP', val: '4,354 kg' },
+      { label: 'Diesel Fija', val: '2,553 gal' },
+      { label: 'Diesel Móvil', val: '41 gal' },
+      { label: 'Energía Red', val: '312,363 kWh' },
+      { label: 'Agua', val: '31,793 m³' }
+    ]
+  },
+  {
+    id: 3,
+    name: 'La Esperanza 1',
+    tipo: 'Incubación',
+    cat1: 204.96, cat2: 237.64, cat3: 61.20, cat4: 117.87,
+    directas: 204.96, indirectas: 253.71, total: 458.67, pct: 2.2,
+    resources: [
+      { label: 'GLP', val: '7,727 kg' },
+      { label: 'Diesel Fija', val: '3,600 gal' },
+      { label: 'Diesel Móvil', val: '5,419 gal' },
+      { label: 'Refrigerante R410a', val: '34 kg' },
+      { label: 'Refrigerante R22', val: '11 kg' },
+      { label: 'Energía Red', val: '811,537 kWh' },
+      { label: 'SFV', val: '281,467 kWh' },
+      { label: 'Agua', val: '34,854 m³' }
+    ]
+  },
+  {
+    id: 4,
+    name: 'La Esperanza 2',
+    tipo: 'Incubación',
+    cat1: 278.50, cat2: 369.45, cat3: 124.47, cat4: 127.89,
+    directas: 278.50, indirectas: 321.90, total: 600.39, pct: 2.9,
+    resources: [
+      { label: 'GLP', val: '8,000 kg' },
+      { label: 'Diesel Fija', val: '5,291 gal' },
+      { label: 'Diesel Móvil', val: '10,845 gal' },
+      { label: 'Refrigerante R22', val: '54 kg' },
+      { label: 'Energía Red', val: '1,126,773 kWh' },
+      { label: 'SFV', val: '572,465 kWh' },
+      { label: 'Agua', val: '36,181 m³' }
+    ]
+  },
+  {
+    id: 5,
+    name: 'Villa Claudia',
+    tipo: 'Incubación',
+    cat1: 328.56, cat2: 156.96, cat3: 0, cat4: 86.09,
+    directas: 328.56, indirectas: 243.05, total: 571.61, pct: 2.8,
+    resources: [
+      { label: 'GLP', val: '10,000 kg' },
+      { label: 'Diesel Fija', val: '21,942 gal' },
+      { label: 'Diesel Móvil', val: '10,112 gal' },
+      { label: 'Refrigerante R410a', val: '2.3 kg' },
+      { label: 'Energía Red', val: '721,939 kWh' },
+      { label: 'Agua', val: '36,690 m³' }
+    ]
+  },
+  {
+    id: 6,
+    name: 'El Bolo',
+    tipo: 'Incubación',
+    cat1: 155.16, cat2: 117.39, cat3: 22.97, cat4: 166.85,
+    directas: 155.16, indirectas: 307.21, total: 462.36, pct: 2.3,
+    resources: [
+      { label: 'Diesel Fija', val: '584 gal' },
+      { label: 'Diesel Móvil', val: '14,741 gal' },
+      { label: 'Refrigerante R404 (Thermo King)', val: '3.2 kg' },
+      { label: 'Energía Red', val: '539,940 kWh' },
+      { label: 'Agua', val: '28,469 m³' },
+      { label: 'Diesel Transporte', val: '2,483 gal' }
+    ]
+  },
+  {
+    id: 7,
+    name: 'Barcelona',
+    tipo: 'Incubación',
+    cat1: 82.43, cat2: 202.53, cat3: 77.64, cat4: 225.21,
+    directas: 82.43, indirectas: 505.39, total: 587.82, pct: 2.9,
+    resources: [
+      { label: 'Gas Natural', val: '1,162 m³' },
+      { label: 'Diesel Fija', val: '275 gal' },
+      { label: 'Diesel Móvil', val: '1,112 gal' },
+      { label: 'Refrigerante R410a', val: '1.4 kg' },
+      { label: 'Refrigerante R404', val: '13.6 kg' },
+      { label: 'Energía Red', val: '931,535 kWh' },
+      { label: 'Agua', val: '40,220 m³' },
+      { label: 'Diesel Transporte', val: '8,392 gal' }
+    ]
+  },
+  {
+    id: 8,
+    name: 'Girón',
+    tipo: 'Incubación',
+    cat1: 232.92, cat2: 250.04, cat3: 131.99, cat4: 207.90,
+    directas: 232.92, indirectas: 589.91, total: 822.84, pct: 4.0,
+    resources: [
+      { label: 'Diesel Fija', val: '1,518 gal' },
+      { label: 'Diesel Móvil', val: '20,435 gal' },
+      { label: 'Refrigerante R410a', val: '1.4 kg' },
+      { label: 'Refrigerante R22', val: '1.8 kg' },
+      { label: 'Refrigerante R404 (Thermo King)', val: '5.4 kg' },
+      { label: 'Energía Red', val: '1,150,033 kWh' },
+      { label: 'Agua', val: '69,781 m³' },
+      { label: 'Diesel Transporte', val: '14,267 gal' }
+    ]
+  },
+  {
+    id: 9,
+    name: 'San Gil',
+    tipo: 'Incubación',
+    cat1: 79.44, cat2: 272.44, cat3: 235.85, cat4: 227.28,
+    directas: 79.44, indirectas: 735.58, total: 815.03, pct: 4.0,
+    resources: [
+      { label: 'GLP', val: '401 kg' },
+      { label: 'Diesel Móvil', val: '6,683 gal' },
+      { label: 'Refrigerante R404 (Thermo King)', val: '3.6 kg' },
+      { label: 'Energía Red', val: '1,224,994 kWh' },
+      { label: 'SFV', val: '28,070 kWh' },
+      { label: 'Agua', val: '63,349 m³' },
+      { label: 'Diesel Transporte', val: '24,833 gal' }
+    ]
+  },
+  {
+    id: 10,
+    name: 'Tucumana',
+    tipo: 'Incubación',
+    cat1: 771.95, cat2: 575.06, cat3: 254.02, cat4: 276.66,
+    directas: 771.95, indirectas: 653.74, total: 1425.69, pct: 6.9,
+    resources: [
+      { label: 'GLP', val: '2,000 kg' },
+      { label: 'Diesel Fija', val: '3,579 gal' },
+      { label: 'Diesel Móvil', val: '43,009 gal' },
+      { label: 'Refrigerante R410a', val: '68 kg' },
+      { label: 'Refrigerante R22', val: '95 kg' },
+      { label: 'Energía Red', val: '2,078,842 kWh' },
+      { label: 'SFV', val: '566,069 kWh' },
+      { label: 'Diesel Transporte', val: '14,153 gal' }
+    ]
+  }
+];
+
+const donutColors = [
+  '#22c55e','#3b82f6','#f97316','#ef4444',
+  '#a855f7','#14b8a6','#eab308','#ec4899',
+  '#06b6d4','#84cc16'
+];
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function fmt(n) {
+  return Number(n).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// ─── ANIMATED COUNTERS ───────────────────────────────────────────────────────
+function animateCounters() {
+  const els = document.querySelectorAll('.kpi-counter');
+  els.forEach(el => {
+    const target = parseFloat(el.dataset.target);
+    const duration = 1200;
+    const start = performance.now();
+    function tick(now) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      // ease out quart
+      const ease = 1 - Math.pow(1 - progress, 4);
+      const val = target * ease;
+      el.textContent = fmt(val);
+      if (progress < 1) requestAnimationFrame(tick);
+      else el.textContent = fmt(target);
+    }
+    requestAnimationFrame(tick);
+  });
+}
+
+// ─── BAR CHART ───────────────────────────────────────────────────────────────
+let barChartInstance = null;
+const barCatVisible = [true, true, true, true];
+
+function buildBarChart() {
+  const ctx = document.getElementById('barChart').getContext('2d');
+  const labels = centers.map(c => c.name);
+
+  const datasets = [
+    {
+      label: 'Cat.1',
+      data: centers.map(c => c.cat1),
+      backgroundColor: 'rgba(239,68,68,0.75)',
+      borderColor: '#ef4444',
+      borderWidth: 0,
+      borderRadius: 3,
+      hidden: !barCatVisible[0]
+    },
+    {
+      label: 'Cat.2',
+      data: centers.map(c => c.cat2),
+      backgroundColor: 'rgba(59,130,246,0.75)',
+      borderColor: '#3b82f6',
+      borderWidth: 0,
+      borderRadius: 3,
+      hidden: !barCatVisible[1]
+    },
+    {
+      label: 'Cat.3',
+      data: centers.map(c => c.cat3),
+      backgroundColor: 'rgba(249,115,22,0.75)',
+      borderColor: '#f97316',
+      borderWidth: 0,
+      borderRadius: 3,
+      hidden: !barCatVisible[2]
+    },
+    {
+      label: 'Cat.4',
+      data: centers.map(c => c.cat4),
+      backgroundColor: 'rgba(34,197,94,0.75)',
+      borderColor: '#22c55e',
+      borderWidth: 0,
+      borderRadius: 3,
+      hidden: !barCatVisible[3]
+    }
+  ];
+
+  if (barChartInstance) barChartInstance.destroy();
+  barChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1a1f2e',
+          borderColor: '#2a3045',
+          borderWidth: 1,
+          titleColor: '#f1f5f9',
+          bodyColor: '#94a3b8',
+          padding: 10,
+          callbacks: {
+            label: ctx => ` ${ctx.dataset.label}: ${fmt(ctx.parsed.y)} ton CO₂e`
+          }
+        }
+      },
+      scales: {
+        x: {
+          stacked: true,
+          grid: { display: false },
+          ticks: {
+            color: '#64748b',
+            font: { size: 10 },
+            maxRotation: 35,
+            minRotation: 25
+          },
+          border: { color: '#2a3045' }
+        },
+        y: {
+          stacked: true,
+          grid: { color: 'rgba(42,48,69,0.6)' },
+          ticks: {
+            color: '#64748b',
+            font: { size: 10 },
+            callback: v => fmt(v)
+          },
+          border: { color: '#2a3045' }
+        }
+      }
+    }
+  });
+}
+
+// Bar filter buttons
+document.getElementById('barChartFilters').addEventListener('click', e => {
+  const btn = e.target.closest('.filter-btn');
+  if (!btn) return;
+  const catIdx = parseInt(btn.dataset.cat);
+  barCatVisible[catIdx] = !barCatVisible[catIdx];
+  const activeClasses = ['active-cat1','active-cat2','active-cat3','active-cat4'];
+  if (barCatVisible[catIdx]) {
+    btn.classList.remove('inactive');
+    btn.classList.add(activeClasses[catIdx]);
+  } else {
+    btn.classList.remove(activeClasses[catIdx]);
+    btn.classList.add('inactive');
+  }
+  if (barChartInstance) {
+    barChartInstance.data.datasets[catIdx].hidden = !barCatVisible[catIdx];
+    barChartInstance.update();
+  }
+});
+
+// ─── DONUT CHART ─────────────────────────────────────────────────────────────
+let donutChartInstance = null;
+
+function buildDonutChart() {
+  const ctx = document.getElementById('donutChart').getContext('2d');
+  const labels = centers.map(c => c.name);
+  const data = centers.map(c => c.total);
+
+  if (donutChartInstance) donutChartInstance.destroy();
+  donutChartInstance = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{
+        data,
+        backgroundColor: donutColors.map(c => c + 'cc'),
+        borderColor: donutColors,
+        borderWidth: 1.5,
+        hoverOffset: 10
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '62%',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1a1f2e',
+          borderColor: '#2a3045',
+          borderWidth: 1,
+          titleColor: '#f1f5f9',
+          bodyColor: '#94a3b8',
+          callbacks: {
+            label: ctx => ` ${fmt(ctx.parsed)} ton CO₂e (${centers[ctx.dataIndex].pct}%)`
+          }
+        }
+      }
+    }
+  });
+
+  // click to scroll and highlight
+  document.getElementById('donutChart').addEventListener('click', e => {
+    const pts = donutChartInstance.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
+    if (!pts.length) return;
+    const idx = pts[0].index;
+    const centerId = centers[idx].id;
+    // switch to centros tab
+    switchTab('centros');
+    setTimeout(() => {
+      const cardEl = document.getElementById('center-card-' + centerId);
+      if (cardEl) {
+        cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        document.querySelectorAll('.center-card').forEach(c => c.classList.remove('highlighted-card'));
+        cardEl.classList.add('highlighted-card');
+        setTimeout(() => cardEl.classList.remove('highlighted-card'), 3000);
+      }
+    }, 380);
+  });
+
+  // build legend
+  const legend = document.getElementById('donutLegend');
+  legend.innerHTML = '';
+  centers.forEach((c, i) => {
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.innerHTML = `
+      <span class="legend-dot" style="background:${donutColors[i]}"></span>
+      <span class="legend-name">${c.name}</span>
+      <span class="legend-val">${fmt(c.total)}</span>
+      <span class="legend-pct">&nbsp;${c.pct}%</span>
+    `;
+    item.addEventListener('click', () => {
+      switchTab('centros');
+      setTimeout(() => {
+        const cardEl = document.getElementById('center-card-' + c.id);
+        if (cardEl) {
+          cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          document.querySelectorAll('.center-card').forEach(cc => cc.classList.remove('highlighted-card'));
+          cardEl.classList.add('highlighted-card');
+          setTimeout(() => cardEl.classList.remove('highlighted-card'), 3000);
+        }
+      }, 380);
+    });
+    legend.appendChild(item);
+  });
+}
+
+// ─── MAIN TABLE ───────────────────────────────────────────────────────────────
+let tableSortCol = 'total';
+let tableSortDir = 'desc';
+let tableSearchVal = '';
+
+function renderTable() {
+  const tbody = document.getElementById('tableBody');
+  let rows = [...centers];
+
+  // filter
+  if (tableSearchVal) {
+    rows = rows.filter(r => r.name.toLowerCase().includes(tableSearchVal.toLowerCase()));
+  }
+
+  // sort
+  rows.sort((a, b) => {
+    let va = a[tableSortCol], vb = b[tableSortCol];
+    if (typeof va === 'string') va = va.toLowerCase(), vb = vb.toLowerCase();
+    if (va < vb) return tableSortDir === 'asc' ? -1 : 1;
+    if (va > vb) return tableSortDir === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  tbody.innerHTML = '';
+  rows.forEach(r => {
+    const pct = (r.total / TOTAL_GLOBAL * 100);
+    const tr = document.createElement('tr');
+    tr.id = 'table-row-' + r.id;
+    tr.innerHTML = `
+      <td><strong>${r.name}</strong><br><span style="font-size:0.7rem;color:var(--muted-d)">${r.tipo}</span></td>
+      <td class="td-center"><span class="td-cat td-cat1">${fmt(r.cat1)}</span></td>
+      <td class="td-center"><span class="td-cat td-cat2">${fmt(r.cat2)}</span></td>
+      <td class="td-center"><span class="td-cat td-cat3">${fmt(r.cat3)}</span></td>
+      <td class="td-center"><span class="td-cat td-cat4">${fmt(r.cat4)}</span></td>
+      <td class="td-center"><span class="scope-chip chip-direct">${fmt(r.directas)}</span></td>
+      <td class="td-center"><span class="scope-chip chip-indirect">${fmt(r.indirectas)}</span></td>
+      <td class="td-center">
+        <div class="pb-wrap">
+          <div class="pb-track"><div class="pb-fill" style="width:${pct}%"></div></div>
+          <span class="pb-val">${fmt(r.total)}</span>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // update sort icons
+  document.querySelectorAll('#mainTable thead th').forEach(th => {
+    const col = th.dataset.col;
+    const icon = th.querySelector('.sort-icon');
+    th.classList.remove('sorted');
+    if (col === tableSortCol) {
+      th.classList.add('sorted');
+      icon.textContent = tableSortDir === 'asc' ? '↑' : '↓';
+    } else {
+      icon.textContent = '↕';
+    }
+  });
+}
+
+// Table sorting
+document.getElementById('mainTable').addEventListener('click', e => {
+  const th = e.target.closest('th[data-col]');
+  if (!th) return;
+  const col = th.dataset.col;
+  if (tableSortCol === col) {
+    tableSortDir = tableSortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    tableSortCol = col;
+    tableSortDir = col === 'name' ? 'asc' : 'desc';
+  }
+  renderTable();
+});
+
+// Table search
+document.getElementById('tableSearch').addEventListener('input', e => {
+  tableSearchVal = e.target.value;
+  renderTable();
+});
+
+// ─── CENTER CARDS ─────────────────────────────────────────────────────────────
+const centerCharts = {};
+
+function buildCenterCards() {
+  const grid = document.getElementById('centersGrid');
+  grid.innerHTML = '';
+
+  centers.forEach((c, idx) => {
+    const maxCat = Math.max(c.cat1, c.cat2, c.cat3, c.cat4);
+    const typeClass = c.tipo === 'Planta Beneficio' ? 'type-planta' : 'type-incubacion';
+    const resourceChips = c.resources.map(r =>
+      `<span class="resource-chip"><strong>${r.label}:</strong> ${r.val}</span>`
+    ).join('');
+
+    const card = document.createElement('div');
+    card.className = 'center-card';
+    card.id = 'center-card-' + c.id;
+    card.innerHTML = `
+      <div class="center-card-header">
+        <div class="center-name">${c.name}</div>
+        <span class="center-type-badge ${typeClass}">${c.tipo}</span>
+      </div>
+      <div class="center-kpi-row">
+        <div class="center-kpi-item">
+          <div class="center-kpi-label">Total</div>
+          <div class="center-kpi-val accent">${fmt(c.total)}</div>
+        </div>
+        <div class="center-kpi-item">
+          <div class="center-kpi-label">% del total</div>
+          <div class="center-kpi-val">${c.pct}%</div>
+        </div>
+        <div class="center-kpi-item">
+          <div class="center-kpi-label">Directas</div>
+          <div class="center-kpi-val red">${fmt(c.directas)}</div>
+        </div>
+        <div class="center-kpi-item">
+          <div class="center-kpi-label">Indirectas</div>
+          <div class="center-kpi-val blue">${fmt(c.indirectas)}</div>
+        </div>
+      </div>
+      <div class="center-chart-area">
+        <div class="center-chart-title">Emisiones por Categoría (ton CO₂e)</div>
+        <div class="center-mini-chart">
+          <canvas id="chartCenter${c.id}"></canvas>
+        </div>
+      </div>
+      <div class="cat-progress-list">
+        <div class="cat-progress-row">
+          <span class="cat-progress-label" style="color:var(--cat1)">Cat.1</span>
+          <div class="cat-progress-track"><div class="cat-progress-fill fill-cat1" style="width:${maxCat > 0 ? (c.cat1/maxCat*100) : 0}%"></div></div>
+          <span class="cat-progress-val">${fmt(c.cat1)}</span>
+        </div>
+        <div class="cat-progress-row">
+          <span class="cat-progress-label" style="color:var(--cat2)">Cat.2</span>
+          <div class="cat-progress-track"><div class="cat-progress-fill fill-cat2" style="width:${maxCat > 0 ? (c.cat2/maxCat*100) : 0}%"></div></div>
+          <span class="cat-progress-val">${fmt(c.cat2)}</span>
+        </div>
+        <div class="cat-progress-row">
+          <span class="cat-progress-label" style="color:var(--cat3)">Cat.3</span>
+          <div class="cat-progress-track"><div class="cat-progress-fill fill-cat3" style="width:${maxCat > 0 ? (c.cat3/maxCat*100) : 0}%"></div></div>
+          <span class="cat-progress-val">${fmt(c.cat3)}</span>
+        </div>
+        <div class="cat-progress-row">
+          <span class="cat-progress-label" style="color:var(--cat4)">Cat.4</span>
+          <div class="cat-progress-track"><div class="cat-progress-fill fill-cat4" style="width:${maxCat > 0 ? (c.cat4/maxCat*100) : 0}%"></div></div>
+          <span class="cat-progress-val">${fmt(c.cat4)}</span>
+        </div>
+      </div>
+      <button class="accordion-toggle" data-center="${c.id}">
+        <span>Detalle de Consumo de Recursos</span>
+        <span class="accordion-icon">▼</span>
+      </button>
+      <div class="accordion-body" id="accordion-${c.id}">
+        <div class="accordion-content">
+          <div class="resource-title">Recursos Consumidos</div>
+          <div class="resource-grid">${resourceChips}</div>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  // Accordion listeners
+  document.querySelectorAll('.accordion-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.center;
+      const body = document.getElementById('accordion-' + id);
+      const isOpen = body.classList.contains('open');
+      body.classList.toggle('open', !isOpen);
+      btn.classList.toggle('open', !isOpen);
+    });
+  });
+}
+
+function initCenterCharts() {
+  centers.forEach(c => {
+    const canvasId = 'chartCenter' + c.id;
+    if (centerCharts[canvasId]) {
+      centerCharts[canvasId].destroy();
+      delete centerCharts[canvasId];
+    }
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    centerCharts[canvasId] = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Cat.1', 'Cat.2', 'Cat.3', 'Cat.4'],
+        datasets: [{
+          data: [c.cat1, c.cat2, c.cat3, c.cat4],
+          backgroundColor: [
+            'rgba(239,68,68,0.75)',
+            'rgba(59,130,246,0.75)',
+            'rgba(249,115,22,0.75)',
+            'rgba(34,197,94,0.75)'
+          ],
+          borderColor: ['#ef4444','#3b82f6','#f97316','#22c55e'],
+          borderWidth: 1,
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#1a1f2e',
+            borderColor: '#2a3045',
+            borderWidth: 1,
+            titleColor: '#f1f5f9',
+            bodyColor: '#94a3b8',
+            callbacks: {
+              label: ctx => ` ${fmt(ctx.parsed.y)} ton CO₂e`
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: '#64748b', font: { size: 10 } },
+            border: { color: '#2a3045' }
+          },
+          y: {
+            grid: { color: 'rgba(42,48,69,0.5)' },
+            ticks: { color: '#64748b', font: { size: 9 }, callback: v => fmt(v) },
+            border: { color: '#2a3045' }
+          }
+        }
+      }
+    });
+  });
+}
+
+// ─── TAB SWITCHING ────────────────────────────────────────────────────────────
+let centrosChartsInitialized = false;
+
+function switchTab(name) {
+  document.querySelectorAll('.nav-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === name);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => {
+    p.classList.remove('active');
+  });
+  const panel = document.getElementById('tab-' + name);
+  if (panel) panel.classList.add('active');
+
+  if (name === 'centros' && !centrosChartsInitialized) {
+    centrosChartsInitialized = true;
+    // slight delay to allow layout to settle
+    setTimeout(() => initCenterCharts(), 60);
+  }
+}
+
+document.querySelectorAll('.nav-tab').forEach(tab => {
+  tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+});
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  buildBarChart();
+  buildDonutChart();
+  renderTable();
+  buildCenterCards();
+  animateCounters();
+});
+</script>
+</body>
+</html>
