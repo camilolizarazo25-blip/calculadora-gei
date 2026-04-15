@@ -37,7 +37,7 @@ export default async function DashboardPage() {
 
   // Transformar a ObligationItem con urgencia calculada
   const obligations: ObligationItem[] = (obligationsResult.data ?? []).map((ob) => {
-    const template = ob.template as { title: string; authority: string; priority: string } | null
+    const template = (ob.template as unknown) as { title: string; authority: string; priority: string } | null
     const days = ob.due_date ? daysUntil(ob.due_date) : null
 
     let urgency: ObligationItem['urgency']

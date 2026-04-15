@@ -40,7 +40,7 @@ export default async function DashboardLayout({
   // Sin organización → pantalla de error clara (no redirigir a login)
   if (!member) redirect('/sin-organizacion')
 
-  const org = member.organizations as { onboarding_completed_at: string | null } | null
+  const org = (member.organizations as unknown) as { onboarding_completed_at: string | null } | null
 
   // Onboarding incompleto → /onboarding
   // IMPORTANTE: excluir /onboarding del check para no crear bucle infinito
