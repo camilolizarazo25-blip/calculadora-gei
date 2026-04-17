@@ -1,8 +1,7 @@
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import Sidebar from '@/components/layout/Sidebar'
-import TopBar from '@/components/layout/TopBar'
+import DashboardShell from '@/components/layout/DashboardShell'
 
 // ─── Responsabilidades de este layout ────────────────────────
 //
@@ -59,14 +58,8 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen bg-surface-50 overflow-hidden">
-      <Sidebar />
-      <div className="flex flex-col flex-1 overflow-hidden">
-        <TopBar />
-        <main className="flex-1 overflow-y-auto p-6">
-          {children}
-        </main>
-      </div>
-    </div>
+    <DashboardShell>
+      {children}
+    </DashboardShell>
   )
 }
